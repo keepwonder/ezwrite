@@ -29,7 +29,6 @@ export default function Editor() {
     if (data.length > 0 && !currentArticle) {
       selectArticle(data[0]);
     } else if (data.length === 0) {
-      // Auto create first article
       const article = await createArticle('欢迎使用 EzWrite', '# 开始写作\n\nEzWrite 是面向内容创作者的现代 Markdown 写作工作台。');
       setArticles([article]);
       selectArticle(article);
