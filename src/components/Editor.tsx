@@ -5,6 +5,7 @@ import { Article, createArticle, updateArticle, getAllArticles } from '@/lib/db'
 import { md, preprocessMarkdown, applyTheme } from '@/lib/markdown';
 import { makeWeChatCompatible, copyToClipboard } from '@/lib/wechat';
 import { THEMES, THEME_GROUPS } from '@/lib/themes';
+import PublishDialog from './PublishDialog';
 
 type ViewMode = 'both' | 'write' | 'preview';
 
@@ -17,6 +18,7 @@ export default function Editor() {
   const [previewHtml, setPreviewHtml] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('both');
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
 
   // Load articles
   useEffect(() => {
@@ -173,6 +175,13 @@ export default function Editor() {
             >
               {isCopied ? '✓ 已复制' : '📋 复制到公众号'}
             </button>
+
+            <button
+              onClick={() => setShowPublishDialog(true)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              🚀 发布到 EzTutorial
+            </button>
           </div>
         </header>
 
@@ -220,6 +229,13 @@ export default function Editor() {
           </div>
         </footer>
       </main>
+
+      {/* Publish Dialog */}
+      <PublishDialog
+        isOpen={showPublishDialog}
+        onClose={() => setShowPublishDialog(false)}
+        article={currentArticle ? { id: currentArticle.id, title, content } : null}
+      />
     </div>
   );
 }
