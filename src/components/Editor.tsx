@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Article, createArticle, updateArticle, getAllArticles } from '@/lib/db';
 import { md, preprocessMarkdown, applyTheme } from '@/lib/markdown';
 import { makeWeChatCompatible, copyToClipboard } from '@/lib/wechat';
 import { THEMES, THEME_GROUPS } from '@/lib/themes';
+
+type ViewMode = 'both' | 'write' | 'preview';
 
 export default function Editor() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -14,9 +16,9 @@ export default function Editor() {
   const [themeId, setThemeId] = useState('ez-lemon');
   const [previewHtml, setPreviewHtml] = useState('');
   const [isCopied, setIsCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
+  const [viewMode, setViewMode] = useState<ViewMode>('both');
 
-  // Load articles on mount
+  // Load articles
   useEffect(() => {
     loadArticles();
   }, []);
@@ -26,6 +28,11 @@ export default function Editor() {
     setArticles(data);
     if (data.length > 0 && !currentArticle) {
       selectArticle(data[0]);
+    } else if (data.length === 0) {
+      // Auto create first article
+      const article = await createArticle('欢迎使用 EzWrite', '# 开始写作\n\nEzWrite 是面向内容创作者的现代 Markdown 写作工作台。');
+      setArticles([article]);
+      selectArticle(article);
     }
   };
 
@@ -44,12 +51,10 @@ export default function Editor() {
   // Auto-save
   useEffect(() => {
     if (!currentArticle) return;
-    
     const timer = setTimeout(async () => {
       await updateArticle(currentArticle.id, { title, content });
       loadArticles();
     }, 1000);
-
     return () => clearTimeout(timer);
   }, [title, content, currentArticle?.id]);
 
@@ -70,20 +75,36 @@ export default function Editor() {
     }
   };
 
+  // View mode button styles
+  const viewModeBtn = (mode: ViewMode, label: string, icon: string) => (
+    <button
+      key={mode}
+      onClick={() => setViewMode(mode)}
+      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+        viewMode === mode
+          ? 'bg-yellow-500 text-white'
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      }`}
+    >
+      <span>{icon}</span>
+      <span>{label}</span>
+    </button>
+  );
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-white">
+            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-white text-lg">
               ✍️
             </div>
-            <span className="font-bold text-gray-800">EzWrite</span>
+            <span className="font-bold text-gray-800 text-lg">EzWrite</span>
           </div>
           <button
             onClick={createNewArticle}
-            className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition-colors"
+            className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition-colors font-medium"
           >
             + 新建文章
           </button>
@@ -108,19 +129,27 @@ export default function Editor() {
       </aside>
 
       {/* Main Editor */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-w-0">
         {/* Toolbar */}
-        <header className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-4">
+          {/* Left: Title */}
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="文章标题"
-            className="flex-1 text-xl font-semibold bg-transparent border-none outline-none placeholder-gray-400"
+            className="flex-1 text-xl font-semibold bg-transparent border-none outline-none placeholder-gray-400 min-w-0"
           />
 
-          <div className="flex items-center gap-4">
-            {/* Theme Selector */}
+          {/* Center: View Mode Toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+            {viewModeBtn('both', '双栏', '◫')}
+            {viewModeBtn('write', '写作', '✏️')}
+            {viewModeBtn('preview', '预览', '👁')}
+          </div>
+
+          {/* Right: Theme & Publish */}
+          <div className="flex items-center gap-3">
             <select
               value={themeId}
               onChange={(e) => setThemeId(e.target.value)}
@@ -135,10 +164,9 @@ export default function Editor() {
               ))}
             </select>
 
-            {/* Publish Button */}
             <button
               onClick={handleCopyToWechat}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 isCopied
                   ? 'bg-green-500 text-white'
                   : 'bg-green-600 text-white hover:bg-green-700'
@@ -149,51 +177,49 @@ export default function Editor() {
           </div>
         </header>
 
-        {/* Editor/Preview Tabs */}
-        <div className="bg-gray-100 border-b border-gray-200 px-4">
-          <div className="flex gap-4">
-            <button
-              onClick={() => setActiveTab('write')}
-              className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'write'
-                  ? 'border-yellow-500 text-yellow-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              写作
-            </button>
-            <button
-              onClick={() => setActiveTab('preview')}
-              className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'preview'
-                  ? 'border-yellow-500 text-yellow-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              预览
-            </button>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-hidden">
-          {activeTab === 'write' ? (
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="# 开始写作..."
-              className="w-full h-full p-6 resize-none border-none outline-none font-mono text-sm leading-relaxed bg-white"
-              spellCheck={false}
-            />
-          ) : (
-            <div className="h-full overflow-y-auto p-6 bg-gray-100">
-              <div
-                className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm"
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
+        {/* Content Area - Dynamic based on view mode */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Editor Panel */}
+          {(viewMode === 'both' || viewMode === 'write') && (
+            <div className={`${viewMode === 'both' ? 'w-1/2' : 'w-full'} flex flex-col border-r border-gray-200`}>
+              <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 font-medium border-b border-gray-200">
+                Markdown
+              </div>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="# 开始写作..."
+                className="flex-1 w-full p-6 resize-none border-none outline-none font-mono text-sm leading-relaxed bg-white"
+                spellCheck={false}
               />
             </div>
           )}
+
+          {/* Preview Panel */}
+          {(viewMode === 'both' || viewMode === 'preview') && (
+            <div className={`${viewMode === 'both' ? 'w-1/2' : 'w-full'} flex flex-col bg-gray-100`}>
+              <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 font-medium border-b border-gray-200">
+                预览
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                <div
+                  className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-8"
+                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                />
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Status Bar */}
+        <footer className="bg-white border-t border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center justify-between">
+          <div>
+            {content.length} 字符 · {content.split(/\s+/).filter(w => w.length > 0).length} 词
+          </div>
+          <div>
+            {currentArticle ? new Date(currentArticle.updatedAt).toLocaleString('zh-CN') : ''}
+          </div>
+        </footer>
       </main>
     </div>
   );
