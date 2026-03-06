@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { publishToEzTutorial, getGitHubToken, setGitHubToken, verifyGitHubToken } from '@/lib/github';
+import { publishToEzTutorial, getGitHubToken, setGitHubToken, verifyGitHubToken, EZTUTORIAL_CATEGORIES, DEFAULT_CATEGORY } from '@/lib/github';
 import { addPublishRecord } from '@/lib/db';
 
 interface PublishDialogProps {
@@ -16,6 +16,7 @@ interface PublishDialogProps {
 
 export default function PublishDialog({ isOpen, onClose, article }: PublishDialogProps) {
   const [token, setToken] = useState('');
+  const [category, setCategory] = useState(DEFAULT_CATEGORY);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState('');
@@ -58,7 +59,9 @@ export default function PublishDialog({ isOpen, onClose, article }: PublishDialo
     setError('');
     setSuccess('');
 
-    const result = await publishToEzTutorial(token, article.title, article.content);
+    const result = await publishToEzTutorial(token, article.title, article.content, {
+      category,
+    });
 
     if (result.success) {
       setSuccess(`发布成功！${result.url}`);
@@ -132,6 +135,22 @@ export default function PublishDialog({ isOpen, onClose, article }: PublishDialo
             >
               {isVerifying ? '验证中...' : '保存并验证 Token'}
             </button>
+          </div>
+
+          {/* Category Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              文章分类
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+            >
+              {EZTUTORIAL_CATEGORIES.map(cat => (
+                <option key={cat.id} value={cat.value}>{cat.name}</option>
+              ))}
+            </select>
           </div>
 
           {/* Target Info */}

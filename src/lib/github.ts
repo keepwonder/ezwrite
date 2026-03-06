@@ -1,4 +1,15 @@
-// GitHub API 集成 - 用于发布到 EzTutorial
+// EzTutorial 支持的分类（与项目中的分类一致）
+export const EZTUTORIAL_CATEGORIES = [
+  { id: 'tech', name: '技术', value: '技术' },
+  { id: 'tutorial', name: '教程', value: '教程' },
+  { id: 'design', name: '设计', value: '设计' },
+  { id: 'ai', name: 'AI', value: 'AI' },
+  { id: 'life', name: '生活', value: '生活' },
+  { id: 'other', name: '其他', value: '其他' },
+];
+
+// 默认分类
+export const DEFAULT_CATEGORY = '技术';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 const EZTUTORIAL_REPO = 'keepwonder/eztutorial';
