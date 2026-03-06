@@ -22,21 +22,37 @@ export function convertToEzTutorialFormat(
   }
 ): string {
   const date = meta?.date || new Date().toISOString().split('T')[0];
-  const slug = title.toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
-    .replace(/^-+|-+$/g, '');
   
-  const frontMatter = `---
-title: "${title}"
-date: "${date}"
-${meta?.tags ? `tags: [${meta.tags.map(t => `"${t}"`).join(', ')}]` : ''}
-${meta?.category ? `category: "${meta.category}"` : ''}
-${meta?.description ? `description: "${meta.description}"` : ''}
----
+  // 只使用 ASCII 字符生成 slug
+  const slug = title.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || 'untitled';
+  
+  // 构建 front matter，避免空行
+  const lines: string[] = [
+    '---',
+    `title: "${title}"`,
+    `date: "${date}"`,
+  ];
+  
+  if (meta?.tags && meta.tags.length > 0) {
+    lines.push(`tags: [${meta.tags.map(t => `"${t}"`).join(', ')}]`);
+  }
+  
+  if (meta?.category) {
+    lines.push(`category: "${meta.category}"`);
+  } else {
+    lines.push('category: "技术"');
+  }
+  
+  if (meta?.description) {
+    lines.push(`description: "${meta.description}"`);
+  }
+  
+  lines.push('---', '');
 
-`;
-
-  return frontMatter + content;
+  return lines.join('\n') + content;
 }
 
 // 发布文章到 EzTutorial
@@ -53,9 +69,13 @@ export async function publishToEzTutorial(
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const fileContent = convertToEzTutorialFormat(title, content, meta);
+    
+    // 只使用 ASCII 字符生成文件名
     const slug = title.toLowerCase()
-      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      || 'untitled';
+    
     const filename = `${slug}.md`;
     const path = `${POSTS_PATH}/${filename}`;
 
