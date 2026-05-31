@@ -83,8 +83,8 @@ export default function Editor() {
       onClick={() => setViewMode(mode)}
       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
         viewMode === mode
-          ? 'bg-yellow-500 text-white'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          ? 'bg-[#151713] text-[#fffdf8]'
+          : 'bg-[#fffdf8] text-[#62685f] hover:bg-[#f1eadf]'
       }`}
     >
       <span>{icon}</span>
@@ -93,19 +93,19 @@ export default function Editor() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#f7f2e8] text-[#151713]">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-        <div className="p-4 border-b border-gray-200">
+      <aside className="w-64 bg-[#fffdf8]/90 border-r border-[rgba(21,23,19,0.14)] flex flex-col flex-shrink-0">
+        <div className="p-4 border-b border-[rgba(21,23,19,0.14)]">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-white text-lg">
-              ✍️
+            <div className="w-8 h-8 bg-[#151713] rounded-[8px] flex items-center justify-center text-[#f7f2e8] text-sm font-bold">
+              W
             </div>
             <span className="font-bold text-gray-800 text-lg">EzWrite</span>
           </div>
           <button
             onClick={createNewArticle}
-            className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition-colors font-medium"
+            className="w-full bg-[#151713] text-[#fffdf8] rounded-[8px] py-2 px-4 hover:bg-[#2a2d25] transition-colors font-medium"
           >
             + 新建文章
           </button>
@@ -116,12 +116,12 @@ export default function Editor() {
             <button
               key={article.id}
               onClick={() => selectArticle(article)}
-              className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                currentArticle?.id === article.id ? 'bg-yellow-50 border-l-4 border-l-yellow-500' : ''
+              className={`w-full text-left p-4 border-b border-[rgba(21,23,19,0.08)] hover:bg-[#f1eadf] transition-colors ${
+                currentArticle?.id === article.id ? 'bg-[#f1eadf] border-l-4 border-l-[#047a55]' : ''
               }`}
             >
-              <div className="font-medium text-gray-800 truncate">{article.title}</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="font-medium text-[#151713] truncate">{article.title}</div>
+              <div className="text-xs text-[#62685f] mt-1">
                 {new Date(article.updatedAt).toLocaleDateString('zh-CN')}
               </div>
             </button>
@@ -132,18 +132,18 @@ export default function Editor() {
       {/* Main Editor */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Toolbar */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-4">
+        <header className="bg-[#f7f2e8]/90 border-b border-[rgba(21,23,19,0.14)] px-4 py-3 flex items-center justify-between gap-4 backdrop-blur">
           {/* Left: Title */}
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="文章标题"
-            className="flex-1 text-xl font-semibold bg-transparent border-none outline-none placeholder-gray-400 min-w-0"
+            className="flex-1 text-xl font-semibold bg-transparent border-none outline-none placeholder-[#9a9588] min-w-0"
           />
 
           {/* Center: View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-[#fffdf8]/85 p-1 rounded-[8px] border border-[rgba(21,23,19,0.12)]">
             {viewModeBtn('both', '双栏', '◫')}
             {viewModeBtn('write', '写作', '✏️')}
             {viewModeBtn('preview', '预览', '👁')}
@@ -154,7 +154,7 @@ export default function Editor() {
             <select
               value={themeId}
               onChange={(e) => setThemeId(e.target.value)}
-              className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              className="bg-[#fffdf8] border border-[rgba(21,23,19,0.14)] rounded-[8px] px-3 py-2 text-sm"
             >
               {THEME_GROUPS.map(group => (
                 <optgroup key={group.label} label={group.label}>
@@ -169,8 +169,8 @@ export default function Editor() {
               onClick={handleCopyToWechat}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 isCopied
-                  ? 'bg-green-500 text-white'
-                  : 'bg-green-600 text-white hover:bg-green-700'
+                  ? 'bg-[#047a55] text-white'
+                  : 'bg-[#047a55] text-white hover:bg-[#035f43]'
               }`}
             >
               {isCopied ? '✓ 已复制' : '📋 复制到公众号'}
@@ -178,7 +178,7 @@ export default function Editor() {
 
             <button
               onClick={() => setShowPublishDialog(true)}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap bg-yellow-500 text-white hover:bg-yellow-600"
+              className="px-4 py-2 rounded-[8px] text-sm font-medium transition-colors whitespace-nowrap bg-[#bd6b1b] text-white hover:bg-[#8f4d35]"
             >
               🚀 发布到 EzTutorial
             </button>
@@ -189,15 +189,15 @@ export default function Editor() {
         <div className="flex-1 flex overflow-hidden">
           {/* Editor Panel */}
           {(viewMode === 'both' || viewMode === 'write') && (
-            <div className={`${viewMode === 'both' ? 'w-1/2' : 'w-full'} flex flex-col border-r border-gray-200`}>
-              <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 font-medium border-b border-gray-200">
+            <div className={`${viewMode === 'both' ? 'w-1/2' : 'w-full'} flex flex-col border-r border-[rgba(21,23,19,0.14)]`}>
+              <div className="bg-[#f1eadf] px-4 py-2 text-xs text-[#62685f] font-medium border-b border-[rgba(21,23,19,0.12)]">
                 Markdown
               </div>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="# 开始写作..."
-                className="flex-1 w-full p-6 resize-none border-none outline-none font-mono text-sm leading-relaxed bg-white"
+                className="flex-1 w-full p-6 resize-none border-none outline-none font-mono text-sm leading-relaxed bg-[#fffdf8]"
                 spellCheck={false}
               />
             </div>
@@ -205,13 +205,13 @@ export default function Editor() {
 
           {/* Preview Panel */}
           {(viewMode === 'both' || viewMode === 'preview') && (
-            <div className={`${viewMode === 'both' ? 'w-1/2' : 'w-full'} flex flex-col bg-gray-100`}>
-              <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 font-medium border-b border-gray-200">
+            <div className={`${viewMode === 'both' ? 'w-1/2' : 'w-full'} flex flex-col bg-[#f1eadf]`}>
+              <div className="bg-[#f1eadf] px-4 py-2 text-xs text-[#62685f] font-medium border-b border-[rgba(21,23,19,0.12)]">
                 预览
               </div>
               <div className="flex-1 overflow-y-auto p-6">
                 <div
-                  className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-8"
+                  className="max-w-3xl mx-auto bg-[#fffdf8] rounded-[8px] border border-[rgba(21,23,19,0.12)] shadow-[0_18px_48px_rgba(43,36,24,0.12)] p-8"
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
               </div>
@@ -220,7 +220,7 @@ export default function Editor() {
         </div>
 
         {/* Status Bar */}
-        <footer className="bg-white border-t border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center justify-between">
+        <footer className="bg-[#fffdf8]/90 border-t border-[rgba(21,23,19,0.14)] px-4 py-2 text-xs text-[#62685f] flex items-center justify-between">
           <div>
             {content.length} 字符 · {content.split(/\s+/).filter(w => w.length > 0).length} 词
           </div>
